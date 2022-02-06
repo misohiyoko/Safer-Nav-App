@@ -205,6 +205,10 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
     if(currentHeading){
       currentHeading = currentHeading * Math.PI /180
       let headingDiff = destinationHeading - currentHeading
+      headingDiff = headingDiff % Math.PI * 2
+      if(headingDiff < 0){
+        headingDiff += Math.PI * 2
+      }
       this.voiceAudioService.speakText("目的地は"+ Math.round(headingDiff*180/Math.PI/30).toString() + "時の方向です")
     }
   }
