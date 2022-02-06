@@ -1,0 +1,15 @@
+runtime: python39
+service: aimaiangular
+handlers:
+- url: /robots.txt
+  static_files: dist/robots.txt
+  upload: dist/robots.txt
+- url: /
+  static_files: dist/index.html
+  upload: dist/index.html
+- url: /(.*\.(gif|png|jpeg|jpg|css|js|ico|wav|txt))$
+  static_files: dist/\1
+  upload: dist/(.*)
+- url: /(.*)
+  static_files: dist/index.html
+  upload: dist/index.html

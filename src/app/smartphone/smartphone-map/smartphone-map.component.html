@@ -1,0 +1,20 @@
+<mat-card class="smartphone-map-wrapper">
+  <mat-form-field class="map-place-form-field" appearance="fill">
+    <mat-label>検索</mat-label>
+    <input matInput type="text" [(ngModel)]="value">
+    <button *ngIf="value" matSuffix mat-icon-button aria-label="Clear" (click)="onClickInput()">
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+  <div class="map-lap">
+    <google-map [height]="null" [width]="null" [center]="center" [zoom]="zoom" [options]="options" (zoomChanged)="setZoom($event)">
+
+      <map-marker *ngIf="hasCurrentPosition()" [position]="navigatorService.getLastLatAndLong()" [options]="currentPositionMarkerOption"></map-marker>
+      <map-marker *ngIf="navigatorService.destination" [position]="navigatorService.destination" [options]="setDestinationPositionMarkerOption"></map-marker>
+      <div *ngFor="let destination of destinations">
+        <map-marker *ngIf="!isDestination(destination.geometry.location)" [position]="destination.geometry.location" [options]="destinationPositionMarkerOption" (mapClick)="onClickMarker($event,destination.address_components)"></map-marker>
+      </div>
+    </google-map>
+  </div>
+</mat-card>
+

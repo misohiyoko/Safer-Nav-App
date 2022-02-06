@@ -1,0 +1,26 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.footer{
+  position: absolute;
+  bottom: 0;
+}
+
+.stretched-tabs{
+  width: 100%;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;}
+.map-container{
+  width:  100%;
+  height: calc(100vh - 300px);
+
+
+ /* height: 600px;
+
+  */
+}

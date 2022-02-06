@@ -1,0 +1,22 @@
+<div class="home-field">
+  <mat-card class="one-line-container mat-card">
+    <mat-card-title>目的地<mat-icon aria-hidden="false" aria-label="Destination">place</mat-icon></mat-card-title>
+    <mat-card-content>
+      <p>
+        {{destinationName()}}
+      </p>
+      <p>
+        {{destinationRange()}}
+      </p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button *ngIf="!navigatorService.isNavigating&&navigatorService.destination" (click)="startNavigation()">ナビ開始</button>
+      <button mat-button *ngIf="navigatorService.isNavigating&&navigatorService.destination" (click)="endNavigation()">ナビ中止</button>
+    </mat-card-actions>
+  </mat-card>
+  <div class="compass-container" id="container" #homeContainer>
+    <canvas class="compass-canvas" id="canvas" #homeCanvas></canvas>
+  </div>
+  <p class="credit">Voiced by https://CoeFont.cloud</p>
+</div>
+<div class="dummy"></div>
