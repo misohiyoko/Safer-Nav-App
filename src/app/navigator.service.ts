@@ -30,7 +30,7 @@ export class NavigatorService {
     this.announcedTimeSecond = this.date.getTime()
 
       navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error)
-    let geoInterval = interval(100).subscribe(x => navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error))
+    let geoInterval = interval(500).subscribe(x => navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error))
 
 
   }
@@ -189,6 +189,7 @@ export class NavigatorService {
 
       }else {
         this.talkedDirectionNum = 0
+        interestDirection = null
       }
     }
 
