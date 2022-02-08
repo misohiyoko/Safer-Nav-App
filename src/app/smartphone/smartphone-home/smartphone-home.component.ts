@@ -15,6 +15,7 @@ import {PlacesResult} from "../../places-response-interface";
 })
 export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
 
+  private preNumtest:number = -1
   private canvasWidth:number = 0
   private canvasHeight:number= 0
   private canvasCircleRadius:number = 0
@@ -66,6 +67,7 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
   }
   }
   displayDestination():void{
+
     let heading = this.navigatorService.getLastPos()?.heading
     if(this.homeCanvas && this.navigatorService.destination && this.navigatorService.getLastPos() && heading){
       heading = heading / 180 * Math.PI
@@ -114,6 +116,9 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
   }
 
   startNavigation():void{
+
+
+
     this.date = new Date()
     this.announcedTime = this.date.getTime()
     this.navigatorService.announcedTime = this.date.getTime()
@@ -179,7 +184,7 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
 
       ///console.log((headingDiff)/Math.PI)
       if(this.navigatorService.isNavigating) {
-        if ((this.date.getTime() - this.announcedTime) >1.8e5) {
+        if ((this.date.getTime() - this.announcedTime) >1.2e5) {
           this.announcedTime = this.date.getTime()
           this.doAnnounce()
         }
@@ -198,6 +203,7 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
     })
 
   }
+
   private doAnnounce() {
 
     let currentHeading = this.navigatorService.getLastPos()?.heading
@@ -205,11 +211,11 @@ export class SmartphoneHomeComponent implements OnInit,AfterViewInit {
     if(currentHeading){
       currentHeading = currentHeading * Math.PI /180
       let headingDiff = destinationHeading - currentHeading
-      headingDiff = headingDiff % Math.PI * 2
+      headingDiff = headingDiff % (Math.PI * 2)
       if(headingDiff < 0){
         headingDiff += Math.PI * 2
       }
-      this.voiceAudioService.speakText("目的地は"+ Math.round(headingDiff*180/Math.PI/30).toString() + "時の方向です")
+      this.voiceAudioService.speakDirection(Math.round(headingDiff*180/Math.PI/30))
     }
   }
 

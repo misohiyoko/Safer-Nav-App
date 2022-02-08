@@ -30,7 +30,7 @@ export class NavigatorService {
     this.announcedTimeSecond = this.date.getTime()
 
       navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error)
-    let geoInterval = interval(500).subscribe(x => navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error))
+    let geoInterval = interval(1000).subscribe(x => navigator.geolocation.getCurrentPosition(this.success.bind(this), this.error))
 
 
   }
@@ -143,6 +143,7 @@ export class NavigatorService {
 
   public announcedTime:number;
   public announcedTimeSecond : number;
+  private sensorHeadingBuffer:number[] = []
   success(pos : GeolocationPosition) {
     AppComponent.isNaviError = false
     let crd = pos.coords;
@@ -151,8 +152,32 @@ export class NavigatorService {
 
     //console.log({latitude : crd.latitude, longtitude : crd.longitude,heading : crd.heading, timeStamp : pos.timestamp, accuracy : crd.accuracy, speed : crd.speed})
 //Hedingは本来crd.headingTestように0
+    ///let headingNumber: number|null = null
+    let instantHeadingNumber: number|null = null
+    if(crd.speed && crd.speed > 0.25 ){
+      ///headingNumber = this.headingCalc(crd.latitude,crd.longitude)
+      if(crd.heading){
+        this.sensorHeadingBuffer.push(crd.heading)
+        if(this.sensorHeadingBuffer.length > 5){
+          let buf = this.sensorHeadingBuffer.slice(-5)
+          this.sensorHeadingBuffer.shift()
+          if((Math.max(...buf) - Math.min(...buf)) < 30){
+            instantHeadingNumber = crd.heading
+            instantHeadingNumber = instantHeadingNumber % 360
+            if(instantHeadingNumber < 0){
+              instantHeadingNumber += 360
+            }
+          }
+        }
+      }
 
-    positionBuffer.push({latitude : crd.latitude, longtitude : crd.longitude,heading : this.headingCalc(crd.latitude,crd.longitude), timeStamp : pos.timestamp, accuracy : crd.accuracy, speed : crd.speed})
+
+    }
+    /*if(Math.abs((headingNumber ?? 0) -( instantHeadingNumber ?? 0)) > 120){
+      headingNumber = null
+
+    }*/
+    positionBuffer.push({latitude : crd.latitude, longtitude : crd.longitude,heading :instantHeadingNumber, timeStamp : pos.timestamp, accuracy : crd.accuracy, speed : crd.speed})
     if(positionBuffer.length > 10000){
       positionBuffer.shift()
     }
@@ -168,32 +193,42 @@ export class NavigatorService {
       ///console.log(destinationHeading.toString()+"destinationheading")
       ///console.log(preDestinationHeading.toString()+"predestinationheading")
       console.log(this.talkedDirectionNum)
-
+      let announceCooldown = 3.0e4
+      let additionCooldown = 1.0e4
       if((Math.abs(Math.sin(destinationHeading)) > 0.90)){
-        if(((this.date.getTime() - this.announcedTime) >3.0e4 + this.talkedDirectionNum)){
+        if(((this.date.getTime() - this.announcedTime) >announceCooldown + this.talkedDirectionNum)){
           this.announcedTime = this.date.getTime()
           interestDirection = positionBuffer[positionBuffer.length -1]
-          if(this.talkedDirectionNum < 6.0e5){
-            this.talkedDirectionNum += 1.2e5
+          if(this.talkedDirectionNum < additionCooldown*3){
+            this.talkedDirectionNum += additionCooldown
           }
         }
 
       }else if((destinationHeading>2.87979 && destinationHeading<3.05433)){
-        if( ((this.date.getTime() - this.announcedTimeSecond) >3.0e4 + this.talkedDirectionNum)){
+        if( ((this.date.getTime() - this.announcedTimeSecond) >announceCooldown + this.talkedDirectionNum)){
           this.announcedTimeSecond = this.date.getTime()
           interestDirection = positionBuffer[positionBuffer.length -1]
-          if(this.talkedDirectionNum < 6.0e5){
-            this.talkedDirectionNum += 1.2e5
+          if(this.talkedDirectionNum < additionCooldown*3){
+            this.talkedDirectionNum += additionCooldown
           }
         }
 
-      }else {
+      }else if(Math.cos(destinationHeading) < -0.5){
+        if( ((this.date.getTime() - this.announcedTimeSecond) >announceCooldown + this.talkedDirectionNum)){
+          this.announcedTimeSecond = this.date.getTime()
+          interestDirection = positionBuffer[positionBuffer.length -1]
+          if(this.talkedDirectionNum < additionCooldown*3){
+            this.talkedDirectionNum += additionCooldown
+          }
+      }
+      else {
         this.talkedDirectionNum = 0
         interestDirection = null
       }
     }
 
-  }
+  }}
+  /*
   headingCalc(lat:number,lng:number){
     let firstLatSum:number = 0
     let firstLngSum:number = 0
@@ -201,12 +236,26 @@ export class NavigatorService {
     let firstCrdsNum:number = 0
 
     let rangeSum:number = 0
-    const range = 22
+    const range = 10
+    const skipRange = 10
     let copiedPosArray = positionBuffer.concat()
     let prePos = {latitude:lat,longtitude:lng}
-
-
-    while(rangeSum < range){
+    /*while(rangeSum < skipRange){
+      let pos = copiedPosArray.pop()
+      if(pos){
+        rangeSum += this.rangeCalc({lat:pos.latitude,lng:pos.longtitude},{lat:prePos.latitude,lng:prePos.longtitude})
+      }else {
+        return null
+      }
+      prePos = pos
+    }
+    if(this.rangeCalc({lat:prePos.latitude,lng:prePos.longtitude},{lat:lat,lng:lng}) < skipRange / 3){
+      return null
+    }*/
+    //prePos = {latitude:lat,longtitude:lng}*/
+    /*
+    rangeSum = 0
+    while(this.rangeCalc({lat:prePos.latitude,lng:prePos.longtitude},{lat:lat,lng:lng}) < range){
 
       let pos = copiedPosArray.pop()
       if(pos){
@@ -219,12 +268,20 @@ export class NavigatorService {
       }
       prePos = pos
     }
-
-    let y1 = (firstLatSum/rangeSum) * Math.PI /180;
-    let x1 = (firstLngSum/rangeSum) * Math.PI /180;
-
-    let y2 = this.getLastLatAndLong().lat * Math.PI /180;
-    let x2 = this.getLastLatAndLong().lng * Math.PI /180;
+    if(this.rangeCalc({lat:prePos.latitude,lng:prePos.longtitude},{lat:lat,lng:lng}) < range / 4){
+      return null
+    }
+    /*let y1 = (firstLatSum/rangeSum) * Math.PI /180;
+    let x1 = (firstLngSum/rangeSum) * Math.PI /180;*/
+    ///ここをたんにnm先のノードのみを参照するようにする
+  /*
+    let y1 = prePos.latitude
+    let x1 = prePos.longtitude
+    if(this.rangeCalc({lat:y1 * 180 / Math.PI,lng:x1 * 180 / Math.PI},{lat:lat,lng:lng}) < range / 6){
+      return null
+    }
+    let y2 = lat * Math.PI /180;
+    let x2 = lng * Math.PI /180;
     let deltax = x2 - x1;
 
     let heading = Math.PI/2 - Math.atan2(Math.cos(y1) * Math.tan(y2) - Math.sin(y1) * Math.cos(deltax) ,Math.sin(deltax))
@@ -232,11 +289,14 @@ export class NavigatorService {
     if(heading < 0){
       heading += Math.PI * 2
     }
+    if(Number.isNaN(heading * 180 / Math.PI)){
+      return  null
+    }
     return  heading * 180 / Math.PI
 
 
   }
-
+  */
   rangeCalc(v1:google.maps.LatLngLiteral,v2:google.maps.LatLngLiteral){
     let r = 6378.137*1000
     let x1 = v1.lng * Math.PI / 180

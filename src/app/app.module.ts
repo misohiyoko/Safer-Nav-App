@@ -20,6 +20,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {OverlayModule} from "@angular/cdk/overlay";
 import {MatCardModule} from "@angular/material/card";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import { SmartphoneTestComponent } from './smartphone/smartphone-test/smartphone-test.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
     SmartphoneUnderbarComponent,
     SmartphoneHomeComponent,
     SmartphoneMapComponent,
-    EndNavigationDialog
+    EndNavigationDialog,
+    SmartphoneTestComponent
 
 
   ],

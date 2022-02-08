@@ -6,6 +6,7 @@ import {from} from "rxjs";
 import hmacSHA256 from 'crypto-js/hmac-sha256'
 import Base64 from 'crypto-js/enc-base64';
 import Hex from 'crypto-js/enc-hex'
+import {A} from "@angular/cdk/keycodes";
 
 
 
@@ -52,6 +53,34 @@ export class VoiceAudioService {
           isPlaying = false
         }
       })
+    }
+  }
+  public speakDirection(direction:number){
+    let audio: HTMLAudioElement
+    if(!isPlaying){
+      isPlaying = true
+      switch (direction){
+        case 0:
+        case 12:
+          audio = new Audio("assets/D12.wav")
+          break
+        default:
+
+          audio = new Audio("assets/D" + direction.toString() + ".wav")
+      }
+      audio.play()
+      timer(3000).subscribe(value => {
+        let nextAudio = audioQueue.shift()
+        if(nextAudio){
+          isPlaying = true
+          nextAudio.start()
+        }else {
+          isPlaying = false
+        }
+      })
+
+
+
     }
   }
   public speakText(text:string){
